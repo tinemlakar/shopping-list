@@ -21,7 +21,7 @@ import { useStore } from "@/lib/store";
 import { SortableItem } from "./SortableItem";
 
 export function ShoppingListView() {
-    const { getActiveStore, toggleItem, reorderItems } = useStore();
+    const { getActiveStore, toggleItem, reorderItems, updateItemQuantity } = useStore();
     const activeStore = getActiveStore();
 
     const sensors = useSensors(
@@ -41,7 +41,7 @@ export function ShoppingListView() {
         );
     }
 
-    const items = activeStore.items.filter((i) => !i.checked);
+    const items = activeStore.items.filter((i) => !i.checked && !i.isArchived);
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
@@ -70,7 +70,9 @@ export function ShoppingListView() {
                                 key={item.id}
                                 id={item.id}
                                 text={item.text}
+                                quantity={item.quantity || 1}
                                 onToggle={() => toggleItem(item.id)}
+                                onUpdateQuantity={(change) => updateItemQuantity(item.id, change)}
                             />
                         ))}
                         {items.length === 0 && (

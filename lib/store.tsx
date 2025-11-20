@@ -6,12 +6,21 @@ export type Item = {
     id: string;
     text: string;
     checked: boolean;
+    isArchived?: boolean;
+    quantity: number;
+};
+
+export type Card = {
+    id: string;
+    title: string;
+    barcodeValue: string;
 };
 
 export type Store = {
     id: string;
     name: string;
     items: Item[];
+    cards: Card[];
 };
 
 type StoreContextType = {
@@ -24,6 +33,13 @@ type StoreContextType = {
     deleteItem: (itemId: string) => void;
     reorderItems: (activeId: string, overId: string) => void;
     getActiveStore: () => Store | undefined;
+    deleteStore: (id: string) => void;
+    archiveItem: (itemId: string) => void;
+    unarchiveItem: (itemId: string) => void;
+    moveAllBasketToArchive: () => void;
+    updateItemQuantity: (itemId: string, change: number) => void;
+    addCard: (card: Omit<Card, "id">) => void;
+    deleteCard: (cardId: string) => void;
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -63,6 +79,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             id: crypto.randomUUID(),
             name,
             items: [],
+            cards: [],
         };
         setStores((prev) => [...prev, newStore]);
         setActiveStoreId(newStore.id);
@@ -81,7 +98,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                         ...store,
                         items: [
                             ...store.items,
-                            { id: crypto.randomUUID(), text, checked: false },
+                            { id: crypto.randomUUID(), text, checked: false, isArchived: false, quantity: 1 },
                         ],
                     };
                 }
@@ -148,6 +165,118 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     const getActiveStore = () => stores.find((s) => s.id === activeStoreId);
 
+    const deleteStore = (id: string) => {
+        setStores((prev) => prev.filter((store) => store.id !== id));
+        if (activeStoreId === id) {
+            setActiveStoreId(null);
+        }
+    };
+
+    const archiveItem = (itemId: string) => {
+        if (!activeStoreId) return;
+        setStores((prev) =>
+            prev.map((store) => {
+                if (store.id === activeStoreId) {
+                    return {
+                        ...store,
+                        items: store.items.map((item) =>
+                            item.id === itemId ? { ...item, isArchived: true } : item
+                        ),
+                    };
+                }
+                return store;
+            })
+        );
+    };
+
+    const unarchiveItem = (itemId: string) => {
+        if (!activeStoreId) return;
+        setStores((prev) =>
+            prev.map((store) => {
+                if (store.id === activeStoreId) {
+                    return {
+                        ...store,
+                        items: store.items.map((item) =>
+                            item.id === itemId ? { ...item, isArchived: false, checked: false } : item
+                        ),
+                    };
+                }
+                return store;
+            })
+        );
+    };
+
+    const moveAllBasketToArchive = () => {
+        if (!activeStoreId) return;
+        setStores((prev) =>
+            prev.map((store) => {
+                if (store.id === activeStoreId) {
+                    return {
+                        ...store,
+                        items: store.items.map((item) =>
+                            item.checked ? { ...item, isArchived: true } : item
+                        ),
+                    };
+                }
+                return store;
+            })
+        );
+    };
+
+    const updateItemQuantity = (itemId: string, change: number) => {
+        if (!activeStoreId) return;
+        setStores((prev) =>
+            prev.map((store) => {
+                if (store.id === activeStoreId) {
+                    return {
+                        ...store,
+                        items: store.items.map((item) => {
+                            if (item.id === itemId) {
+                                const newQuantity = (item.quantity || 1) + change;
+                                return { ...item, quantity: Math.max(1, newQuantity) };
+                            }
+                            return item;
+                        }),
+                    };
+                }
+                return store;
+            })
+        );
+    };
+
+    const addCard = (card: Omit<Card, "id">) => {
+        if (!activeStoreId) return;
+        setStores((prev) =>
+            prev.map((store) => {
+                if (store.id === activeStoreId) {
+                    return {
+                        ...store,
+                        cards: [
+                            ...(store.cards || []),
+                            { ...card, id: crypto.randomUUID() },
+                        ],
+                    };
+                }
+                return store;
+            })
+        );
+    };
+
+    const deleteCard = (cardId: string) => {
+        if (!activeStoreId) return;
+        setStores((prev) =>
+            prev.map((store) => {
+                if (store.id === activeStoreId) {
+                    return {
+                        ...store,
+                        cards: (store.cards || []).filter((c) => c.id !== cardId),
+                    };
+                }
+                return store;
+            })
+        );
+    };
+
     return (
         <StoreContext.Provider
             value={{
@@ -160,6 +289,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 deleteItem,
                 reorderItems,
                 getActiveStore,
+                deleteStore,
+                archiveItem,
+                unarchiveItem,
+                moveAllBasketToArchive,
+                updateItemQuantity,
+                addCard,
+                deleteCard,
             }}
         >
             {children}

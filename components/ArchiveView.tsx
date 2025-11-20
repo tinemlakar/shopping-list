@@ -2,33 +2,23 @@
 
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, Trash2, Archive } from "lucide-react";
+import { RotateCcw, Trash2 } from "lucide-react";
 
-export function BasketView() {
-    const { getActiveStore, toggleItem, deleteItem, moveAllBasketToArchive, updateItemQuantity } = useStore();
+export function ArchiveView() {
+    const { getActiveStore, unarchiveItem, deleteItem, updateItemQuantity } = useStore();
     const activeStore = getActiveStore();
 
     if (!activeStore) {
         return null;
     }
 
-    const items = activeStore.items.filter((i) => i.checked && !i.isArchived);
+    const items = activeStore.items.filter((i) => i.isArchived);
 
     return (
         <div className="space-y-4">
-            {items.length > 0 && (
-                <Button
-                    onClick={moveAllBasketToArchive}
-                    className="w-full bg-orange-100 text-orange-700 hover:bg-orange-200 hover:text-orange-800 border border-orange-200 shadow-sm mb-4"
-                >
-                    <Archive className="w-4 h-4 mr-2" />
-                    Move all to Archive
-                </Button>
-            )}
-
             {items.length === 0 && (
                 <div className="text-center py-12 text-gray-400 font-medium bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
-                    Your basket is empty.
+                    Archive is empty.
                 </div>
             )}
 
@@ -38,7 +28,7 @@ export function BasketView() {
                         key={item.id}
                         className="flex items-center gap-3 p-3 bg-gray-50/80 border border-gray-100 rounded-xl opacity-75 hover:opacity-100 transition-all duration-200 group"
                     >
-                        <span className="flex-1 font-medium text-gray-500 line-through decoration-gray-300 group-hover:decoration-gray-400 transition-colors">
+                        <span className="flex-1 font-medium text-gray-500">
                             {item.text}
                         </span>
 
@@ -67,9 +57,9 @@ export function BasketView() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => toggleItem(item.id)}
+                                onClick={() => unarchiveItem(item.id)}
                                 className="h-8 w-8 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full"
-                                title="Return to list"
+                                title="Move to List"
                             >
                                 <RotateCcw className="w-4 h-4" />
                             </Button>

@@ -9,10 +9,12 @@ import { Button } from "@/components/ui/button";
 interface SortableItemProps {
     id: string;
     text: string;
+    quantity: number;
     onToggle: () => void;
+    onUpdateQuantity: (change: number) => void;
 }
 
-export function SortableItem({ id, text, onToggle }: SortableItemProps) {
+export function SortableItem({ id, text, quantity, onToggle, onUpdateQuantity }: SortableItemProps) {
     const {
         attributes,
         listeners,
@@ -45,7 +47,36 @@ export function SortableItem({ id, text, onToggle }: SortableItemProps) {
                 <GripVertical className="w-5 h-5" />
             </div>
 
-            <span className="flex-1 font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{text}</span>
+            <div className="flex-1 flex items-center gap-3">
+                <span className="font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{text}</span>
+
+                <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-1 border border-gray-100 ml-auto mr-2">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onUpdateQuantity(-1);
+                        }}
+                        className="h-6 w-6 rounded-md hover:bg-white hover:shadow-sm text-gray-500"
+                        disabled={quantity <= 1}
+                    >
+                        -
+                    </Button>
+                    <span className="text-sm font-medium w-6 text-center text-gray-700">{quantity}</span>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onUpdateQuantity(1);
+                        }}
+                        className="h-6 w-6 rounded-md hover:bg-white hover:shadow-sm text-gray-500"
+                    >
+                        +
+                    </Button>
+                </div>
+            </div>
 
             <Button
                 variant="ghost"

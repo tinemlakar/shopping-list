@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Store as StoreIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 export function StoreSelector() {
-    const { stores, activeStoreId, selectStore, addStore } = useStore();
+    const { stores, activeStoreId, addStore, deleteStore } = useStore();
     const [isCreating, setIsCreating] = useState(false);
     const [newStoreName, setNewStoreName] = useState("");
+    const router = useRouter();
 
     const handleCreateStore = (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,28 +58,32 @@ export function StoreSelector() {
 
             <div className="grid grid-cols-2 gap-3">
                 {stores.map((store) => (
-                    <button
+                    <div
                         key={store.id}
-                        onClick={() => selectStore(store.id)}
                         className={cn(
-                            "flex flex-col items-start p-4 rounded-xl border transition-all duration-300 text-left group relative overflow-hidden",
-                            activeStoreId === store.id
-                                ? "border-indigo-500 bg-indigo-50/50 text-indigo-900 shadow-md ring-1 ring-indigo-200"
-                                : "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/30 text-gray-700 hover:shadow-sm"
+                            "relative group flex flex-col items-start p-4 rounded-xl border transition-all duration-300 text-left overflow-hidden",
+                            "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/30 text-gray-700 hover:shadow-sm"
                         )}
                     >
+                        {/* Navigation Layer - Handles click for the card background */}
+                        <div
+                            className="absolute inset-0 z-10 cursor-pointer"
+                            onClick={() => router.push(`/shop/${store.id}`)}
+                        />
+
+                        {/* Gradient Layer - Decorative */}
                         <div className={cn(
-                            "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-transparent via-transparent to-indigo-100/30",
-                            activeStoreId === store.id && "opacity-100"
+                            "absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-transparent via-transparent to-indigo-100/30 pointer-events-none"
                         )} />
-                        <span className="font-semibold truncate w-full relative z-10">{store.name}</span>
-                        <span className={cn(
-                            "text-xs mt-1 relative z-10 transition-colors",
-                            activeStoreId === store.id ? "text-indigo-600 font-medium" : "text-gray-500 group-hover:text-indigo-500"
-                        )}>
+
+                        {/* Content Layer */}
+                        <div className="flex justify-between items-start w-full relative z-20 pointer-events-none">
+                            <span className="font-semibold truncate pr-2">{store.name}</span>
+                        </div>
+                        <span className="text-xs mt-1 relative z-20 text-gray-500 group-hover:text-indigo-500 transition-colors pointer-events-none">
                             {store.items.filter((i) => !i.checked).length} items
                         </span>
-                    </button>
+                    </div>
                 ))}
             </div>
 
